@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message AdmRequest {
+    string msg = 1;
+    string sender =2;
+    string tm =3;
+}
+
+message AdmReply {
+    string res = 1;
+    string rem = 2;
+}
+
+service Adm {
+    rpc BookingQueue(AdmRequest) returns (AdmReply) {}
+    rpc BookingChk(AdmRequest) returns (AdmReply) {}
+}
