@@ -9,7 +9,7 @@ class Session {
         let restoredSessions = new Array()
         let allCollections = []
         try {
-            const db = mongoClient.db('wa81-a')
+            const db = mongoClient.db('wa81-a_test')
             const result = await db.listCollections().toArray()
             console.log(result)
             result.forEach((collection) => {

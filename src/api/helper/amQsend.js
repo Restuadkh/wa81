@@ -1,6 +1,6 @@
 const { Worker } = require('worker_threads')
-const QUEUE_TM = 'tm_queue'
-const Q_WA_GW = 'wa.notif'
+const QUEUE_TM = 'tm_queue_'
+const Q_WA_GW = 'wa.notif_'
 
 
 async function amQsend(msg, tch='ch.187') {

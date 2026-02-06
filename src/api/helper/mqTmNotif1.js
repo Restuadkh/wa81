@@ -1,6 +1,6 @@
 const amqp = require('amqplib/callback_api');
 const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
-const Q_TMWAGW = 'tmgw.notif'
+const Q_TMWAGW = 'tmgw.notif_'
 
 let lsSimrsGroup = ['.']
 let lshappybday = ['.']

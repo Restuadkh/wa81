@@ -4,7 +4,7 @@ const pino = require('pino')
 const {
     default: makeWASocket,
     DisconnectReason,
-} = require('@whiskeysockets/baileys')
+} = require('baileys')
 const { unlinkSync } = require('fs')
 const { v4: uuidv4 } = require('uuid')
 const path = require('path')
@@ -47,11 +47,14 @@ class WhatsAppInstance {
     cntWait = 3_333
     info2group = 0
     nBEerror = 0
-    ID_rsdPS = "6281904000707@s.whatsapp.net"
-    ID_rsdGw = "6289510778377@s.whatsapp.net"
-    ID_Admin = "628121549688@s.whatsapp.net"
+    // ID_rsdPS = "6281904000707@s.whatsapp.net"
+    // ID_rsdGw = "6289510778377@s.whatsapp.net"
+    // ID_Admin = "628121549688@s.whatsapp.net"
+    ID_rsdGw = "6289676045712@s.whatsapp.net"
+    ID_rsdPS = "6289676045712@s.whatsapp.net"
+    ID_Admin = "6289676045712@s.whatsapp.net"
     lsGoodclient = ["6287882917469", "6281328451789", "6282337992517"]
-    lsTrustedClient = ["6289510778377", "628112637570", "6285729363646", "6287882917469", "6281804150382"]
+    lsTrustedClient = ["6289676045712", "6289510778377", "628112637570", "6285729363646", "6287882917469", "6281804150382"]
     lsBotClient = ['6281808800055']
     lsTrialclient = ["6285729363646"]
     lsBruteClient = []
@@ -112,7 +115,7 @@ class WhatsAppInstance {
             this.prevMsgTd = []
             this.pInfoLate1 = []
         }
-        this.collection = mongoClient.db('wa81-a').collection(this.key)
+        this.collection = mongoClient.db('wa81-a_test').collection(this.key)
         const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
@@ -146,21 +149,21 @@ class WhatsAppInstance {
     }
 
     async __NoteSet(iKey, data) {
-        let r = await this.axiosInstance.put('note', { instanceKey: iKey, data: data }).catch((e) => {
-            console.log('Exception __NoteSet::', e.code, e)
-        })
+        // let r = await this.axiosInstance.put('note', { instanceKey: iKey, data: data }).catch((e) => {
+        //     console.log('Exception __NoteSet::', e.code, e)
+        // })
 
-        console.log(`ikey = ${iKey}`)
-        console.log(`data = ${JSON.stringify(data, null, 2)}`)
-        if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
+        // console.log(`ikey = ${iKey}`)
+        // console.log(`data = ${JSON.stringify(data, null, 2)}`)
+        // if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
     }
 
     async __NoteGet(iKey) {
-        const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
-            .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
-        if (r && r.data) return r.data
-	console.log(`ikey = ${iKey}`)
-        return r
+    //     const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
+    //         .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
+    //     if (r && r.data) return r.data
+	// console.log(`ikey = ${iKey}`)
+    //     return r
     }
 
 
@@ -224,7 +227,7 @@ class WhatsAppInstance {
                     // {"statusCode":428,"error":"Precondition Required","message":"Connection Terminated"}
                     let mx = `⚡️🔴WA81.disconnected\n${JSON.stringify(lastDisconnect?.error?.output?.payload)}`
                     await this.__NoteSet(this.key, { conn_close: mx })
-                    await amQsend(mx)
+                    // await amQsend(mx)
 
                     if (/Method Not Allowed/si.test(mx)) {
                         mx = mx.replace('WA81.', 'Wa-Pendaftaran ')
@@ -272,10 +275,11 @@ class WhatsAppInstance {
 
             } else if (connection === 'open') {
                 // if (config.mongoose.enabled) {
-                let alreadyThere = await Chat.findOne({ key: this.key, }).exec()
+                let alreadyThere = await Chat.findByKey({ key: this.key, })
                 if (!alreadyThere) {
-                    const saveChat = new Chat({ key: this.key })
-                    await saveChat.save()
+                    // const saveChat = new Chat({ key: this.key })
+                    await Chat.insertChat({ key: this.key })
+                    // await saveChat.save()
                 }
                 // }
                 await this.__NoteSet(this.key, { s_open: cTimeStamp() })
@@ -1588,7 +1592,9 @@ class WhatsAppInstance {
     async execRsv(waId, mx, now, token) {
         try {
             const rsv = { msg: mx, sender: waIdToPhnNumber(waId), tm: cTimeStamp(now) }
-            return await MyGrpc2.getInstance('5007').reservation(rsv, token)
+            let response = await MyGrpc2.getInstance('5007').reservation(rsv, token)
+            console.log("Response : ",response)
+            return response
         } catch (e) {
             console.log(`Error execRsv  ${waId}:${token}::`, e)
             await amQsend(`⛑⛑😱Wa81 Error-execRsv:\n${waId}\n${token}\n${e}`)
@@ -2158,7 +2164,7 @@ class WhatsAppInstance {
 
     // get Chat object from db
     async getChat(key = this.key) {
-        let dbResult = await Chat.findOne({ key: key }).exec()
+        let dbResult = await Chat.findByKey({ key: key })
         let ChatObj = dbResult.chat
         return ChatObj
     }
@@ -2326,7 +2332,8 @@ class WhatsAppInstance {
 
     async deleteInstance(key) {
         try {
-            await Chat.findOneAndDelete({ key: key })
+            await Chat.findByKey({ key: key })
+            await Chat.deleteByKey({ key: key })
         } catch (e) {
             logger.error('Error updating document failed')
         }
@@ -2335,7 +2342,7 @@ class WhatsAppInstance {
     // update db document -> chat
     async updateDb(object) {
         try {
-            await Chat.updateOne({ key: this.key }, { chat: object })
+            await Chat.updateChat({ key: this.key }, { chat: object })
         } catch (e) {
             logger.error('Error updating document failed')
         }
