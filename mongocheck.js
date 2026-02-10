@@ -6,21 +6,24 @@ let db
 
 export async function getDB() {
     if (!client) {
-        client = new MongoClient("mongodb://10.10.187.6:27017")
+        client = new MongoClient("mongodb://10.10.187.33:27017")
         await client.connect()
-        db = client.db("wa81-a_test")
+        db = client.db(process.env.MONGO_DB)
         console.log('Mongo connected')
 
         // TEST CRUD
         let data = await db.collection('wa-81-adm').find().toArray()
         console.log(data)
 
-        await db.collection('wa-81-adm').deleteMany()
-        // await db.collection('test').insertOne({
-        //     name: 'Restu',
-        //     email: 'restu@mail.com',
+        // await db.collection('wa-81-adm').deleteMany()
+        // db.collection.deleteMany({})
+        // await db.collection('notes').insertOne({
+        //     _id: 'wa-81-adm',
+        //     data: "{ conn_close: '⚡️🔴WA81.disconnected\nundefined' }",
         //     createdAt: new Date()
         // })
+        // data = await db.collection('notes').find().toArray()
+        // console.log(data)
         // data = await db.collection('test').find().toArray()
         // console.log(data)
         // await db.collection('test').updateOne(

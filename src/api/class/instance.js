@@ -28,6 +28,7 @@ const MyGrpc2 = require('./P2gRpc')
 
 class WhatsAppInstance {
     socketConfig = {
+        version: [2, 3000, 1027934702], // WA Web Version (fix error)
         defaultQueryTimeoutMs: undefined,
         printQRInTerminal: false,
         logger: pino({
@@ -115,8 +116,9 @@ class WhatsAppInstance {
             this.prevMsgTd = []
             this.pInfoLate1 = []
         }
-        this.collection = mongoClient.db('wa81-a_test').collection(this.key)
+        this.collection = mongoClient.db(process.env.MONGO_DB).collection(this.key)
         const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        this.noteCollection = mongoClient.db(process.env.MONGO_DB).collection('notes')
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
@@ -149,6 +151,25 @@ class WhatsAppInstance {
     }
 
     async __NoteSet(iKey, data) {
+        if (!iKey || !data || typeof data !== 'object') return
+        // console.log("__NoteSet iKey:")
+        // console.log(iKey)
+        // console.log("data:")
+        // console.log(data)
+        try {
+            await this.noteCollection.updateOne(
+                { _id: iKey },
+                {
+                    $set: {
+                        ...data,
+                        updatedAt: new Date()
+                    }
+                },
+                { upsert: true }
+            )
+        } catch (err) {
+            console.error('__NoteSet error:', err.message)
+        }
         // let r = await this.axiosInstance.put('note', { instanceKey: iKey, data: data }).catch((e) => {
         //     console.log('Exception __NoteSet::', e.code, e)
         // })
@@ -159,11 +180,21 @@ class WhatsAppInstance {
     }
 
     async __NoteGet(iKey) {
-    //     const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
-    //         .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
-    //     if (r && r.data) return r.data
-	// console.log(`ikey = ${iKey}`)
-    //     return r
+        if (!iKey) return null
+
+        // console.log("__NoteGet :")
+        // console.log(iKey)
+        try {
+            return await this.noteCollection.findOne({ _id: iKey })
+        } catch (err) {
+            console.error('__NoteGet error:', err.message)
+            return null
+        }
+        //     const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
+        //         .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
+        //     if (r && r.data) return r.data
+        // console.log(`ikey = ${iKey}`)
+        //     return r
     }
 
 
@@ -217,6 +248,8 @@ class WhatsAppInstance {
                 this.con00 = 0
                 await this.SendWebhook(`Wa81.close.${lastDisconnect?.error?.output?.statusCode}`, { connection: connection, }, this.key)
                 await this.__NoteSet(this.key, { s_close: cTimeStamp() })
+                console.log("connection : ", connection)
+                console.log("lastDisconnect : ", lastDisconnect?.error)
                 if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) {
                     this.cnt01++
                     console.log(lastDisconnect?.error?.output?.payload, `#${this.cnt01}\n`)
@@ -330,7 +363,7 @@ class WhatsAppInstance {
                 console.log(`requesting QR  @${connection}`);
                 await amQsend('⚡️ WA-81 requesting QRCode!')
                 await amQsend('⚡️ WA-Pendaftaran requesting QRCode!', 'group')
-                console.log(await QRCode.toString(qr, { type: "terminal", small: true }));
+                // console.log(await QRCode.toString(qr, { type: "terminal", small: true }));
                 QRCode.toDataURL(qr).then((url) => {
                     this.xConnState = false
                     this.instance.qr = url
@@ -354,7 +387,7 @@ class WhatsAppInstance {
 
         // on new mssage --------------------------------------------------------------------------------------
         sock?.ev.on('messages.upsert', async (m) => {
-			console.log("Pesan Baru : ",JSON.stringify(m))
+            console.log("Pesan Baru : ", JSON.stringify(m))
             if (m.type === 'prepend') {
                 console.log(`DEBUG prepend:: ${m}`)
                 this.instance.messages.unshift(...m.messages)
@@ -1593,7 +1626,7 @@ class WhatsAppInstance {
         try {
             const rsv = { msg: mx, sender: waIdToPhnNumber(waId), tm: cTimeStamp(now) }
             let response = await MyGrpc2.getInstance('5007').reservation(rsv, token)
-            console.log("Response : ",response)
+            console.log("Response : ", response)
             return response
         } catch (e) {
             console.log(`Error execRsv  ${waId}:${token}::`, e)

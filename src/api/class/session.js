@@ -9,7 +9,7 @@ class Session {
         let restoredSessions = new Array()
         let allCollections = []
         try {
-            const db = mongoClient.db('wa81-a_test')
+            const db = mongoClient.db(process.env.MONGO_DB)
             const result = await db.listCollections().toArray()
             console.log(result)
             result.forEach((collection) => {
@@ -25,7 +25,7 @@ class Session {
                         if (err) throw err
                         const webhook = !config.webhookEnabled ? undefined : config.webhookEnabled
                         const webhookUrl = !config.webhookUrl ? undefined : config.webhookUrl
-                        const instance = new WhatsAppInstance(key, webhook, webhookUrl)
+                        const instance = new WhatsAppInstance(key, null, null)
                         await instance.init()
                         WhatsAppInstances[key] = instance
                         const msgQueue = new MsgQueue(instance)

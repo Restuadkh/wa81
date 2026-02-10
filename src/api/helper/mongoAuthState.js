@@ -57,19 +57,37 @@ const BufferJSON = {
 
 module.exports = useMongoDBAuthState = async (collection) => {
     const writeData = (data, id) => {
-        return collection.replaceOne(
+        if (!data || typeof data !== 'object') return
+        // console.log("writeData :")
+        // console.log(data)
+        console.log('writeData:', id)
+        return collection.updateOne(
             { _id: id },
-            JSON.parse(JSON.stringify(data, BufferJSON.replacer)),
+            {
+                $set: JSON.parse(
+                    JSON.stringify(data, BufferJSON.replacer)
+                )
+            },
             { upsert: true }
         )
     }
     const readData = async (id) => {
         try {
-            const data = JSON.stringify(await collection.findOne({ _id: id }))
-            return JSON.parse(data, BufferJSON.reviver)
+            // const data = JSON.stringify(await collection.findOne({ _id: id }))
+            const data = await collection.findOne({ _id: id })
+            if (!data) return null
+            console.log("readData :")
+            console.log(data)
+            // return JSON.parse(data, BufferJSON.reviver)
+            return JSON.parse(
+                JSON.stringify(doc),
+                BufferJSON.reviver
+            )
         } catch (error) {
             return null
         }
+        // const data = JSON.stringify(await collection.findOne({ _id: id }))
+        // return JSON.parse(data, BufferJSON.reviver)
     }
     const removeData = async (id) => {
         try {
@@ -86,8 +104,8 @@ module.exports = useMongoDBAuthState = async (collection) => {
                     await Promise.all(
                         ids.map(async (id) => {
                             let value = await readData(`${type}-${id}`)
-                            if (type === 'app-state-sync-key') {
-                                value = proto.Message.AppStateSyncKeyData.fromObject(data)
+                            if (value && type === 'app-state-sync-key') {
+                                value = proto.Message.AppStateSyncKeyData.fromObject(value)
                             }
                             data[id] = value
                         })

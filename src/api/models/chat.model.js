@@ -17,7 +17,7 @@
 
 const { MongoClient } = require('mongodb')
 const config = require('../../config/config')
-
+const dotenv = require('dotenv')
 const uri = config.mongoose.url // sesuaikan
 
 let client
@@ -27,7 +27,7 @@ async function connectDB() {
     if (!db) {
         client = new MongoClient(uri)
         await client.connect()
-        db = client.db('wa81-a_test')
+        db = client.db(process.env.MONGO_DB)
 
         // pastikan index unique untuk key
         await db.collection('chats').createIndex(
