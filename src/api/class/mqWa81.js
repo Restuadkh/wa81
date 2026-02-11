@@ -2,7 +2,7 @@ const amqp = require('amqplib/callback_api')
 const { validPhnNumber } = require('../helper/validPhnNumber')
 
 const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
-const QUEUE_WA = 'wa_adm.notif'
+const QUEUE_WA = 'wa_adm.notif_'
 
 
 class MsgQueue {

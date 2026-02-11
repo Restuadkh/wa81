@@ -159,7 +159,7 @@ class WhatsAppInstance {
         const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
             .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
         if (r && r.data) return r.data
-	console.log(`ikey = ${iKey}`)
+        console.log(`ikey = ${iKey}`)
         return r
     }
 
@@ -272,10 +272,9 @@ class WhatsAppInstance {
 
             } else if (connection === 'open') {
                 // if (config.mongoose.enabled) {
-                let alreadyThere = await Chat.findOne({ key: this.key, }).exec()
+                let alreadyThere = await Chat.findByKey({ key: this.key, })
                 if (!alreadyThere) {
-                    const saveChat = new Chat({ key: this.key })
-                    await saveChat.save()
+                    await Chat.pushChat({ key: this.key })
                 }
                 // }
                 await this.__NoteSet(this.key, { s_open: cTimeStamp() })
@@ -350,7 +349,7 @@ class WhatsAppInstance {
 
         // on new mssage --------------------------------------------------------------------------------------
         sock?.ev.on('messages.upsert', async (m) => {
-			console.log("Pesan Baru : ",JSON.stringify(m))
+            console.log("Pesan Baru : ", JSON.stringify(m))
             if (m.type === 'prepend') {
                 console.log(`DEBUG prepend:: ${m}`)
                 this.instance.messages.unshift(...m.messages)
@@ -378,6 +377,10 @@ class WhatsAppInstance {
                 }
 
                 const messageType = Object.keys(msg.message)[0]
+                if (msg.message?.protocolMessage) {
+                    console.log('⏭️ protocolMessage dilewati')
+                    return
+                }
                 if (['protocolMessage', 'senderKeyDistributionMessage',].includes(messageType))
                     return
 
@@ -2158,7 +2161,7 @@ class WhatsAppInstance {
 
     // get Chat object from db
     async getChat(key = this.key) {
-        let dbResult = await Chat.findOne({ key: key }).exec()
+        let dbResult = await Chat.findByKey({ key: key })
         let ChatObj = dbResult.chat
         return ChatObj
     }
@@ -2326,7 +2329,8 @@ class WhatsAppInstance {
 
     async deleteInstance(key) {
         try {
-            await Chat.findOneAndDelete({ key: key })
+            if (await Chat.findByKey({ key: key }))
+                await Chat.deleteByKey({ key: key })
         } catch (e) {
             logger.error('Error updating document failed')
         }
@@ -2335,7 +2339,9 @@ class WhatsAppInstance {
     // update db document -> chat
     async updateDb(object) {
         try {
-            await Chat.updateOne({ key: this.key }, { chat: object })
+
+            if (await Chat.findByKey({ key: key }))
+                await Chat.updateChat({ key: key, chat: object })
         } catch (e) {
             logger.error('Error updating document failed')
         }
