@@ -100,7 +100,7 @@ class WhatsAppInstance {
             this.allowWebhook = true
             this.instance.customWebhook = webhook
             this.axiosInstance = axios.create({ baseURL: webhook, })
-            this.__NoteSet(this.key, { s_construct: cTimeStamp() })
+            // this.__NoteSet(this.key, { s_construct: cTimeStamp() })
         }
     }
 
@@ -113,6 +113,7 @@ class WhatsAppInstance {
             this.pInfoLate1 = []
         }
         this.collection = mongoClient.db('wa81-a').collection(this.key)
+        this.notecollection = mongoClient.db('wa81-a_note').collection(this.key)
         const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
@@ -146,21 +147,43 @@ class WhatsAppInstance {
     }
 
     async __NoteSet(iKey, data) {
-        let r = await this.axiosInstance.put('note', { instanceKey: iKey, data: data }).catch((e) => {
-            console.log('Exception __NoteSet::', e.code, e)
-        })
+        const exists = await this.notecollection.findOne({ _id: iKey })
 
-        console.log(`ikey = ${iKey}`)
-        console.log(`data = ${JSON.stringify(data, null, 2)}`)
-        if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
+        if (exists) {
+            await this.notecollection.updateOne(
+                { _id: iKey },
+                { $set: data }
+            )
+        } else {
+            await this.notecollection.insertOne({
+                _id: iKey,
+                ...data
+            })
+        }
+
+        console.log(
+            "__NoteSet",
+            await this.notecollection.findOne({ _id: iKey })
+        )
+        console.log("__NoteSet", await this.notecollection.find({ _id: iKey }).toArray())
+        console.log("__NoteSet : ", data)
+        // let r = await this.axiosInstance.put('note', { instanceKey: iKey, data: data }).catch((e) => {
+        //     console.log('Exception __NoteSet::', e.code, e)
+        // })
+
+        // console.log(`ikey = ${iKey}`)
+        // console.log(`data = ${JSON.stringify(data, null, 2)}`)
+        // if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
     }
 
     async __NoteGet(iKey) {
-        const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
-            .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
+        const r = await this.notecollection.findOne({ _id: iKey })
+        console.log("__NoteGet", r)
+        // const r = await this.axiosInstance.get(`${iKey}`,).then(res => res.data)
+        //     .catch((err) => { console.log(`Exception __NoteGet ${iKey}::`, err.code, err) })
         if (r && r.data) return r.data
-        console.log(`ikey = ${iKey}`)
-        return r
+        // console.log(`ikey = ${iKey}`)
+        // return r
     }
 
 

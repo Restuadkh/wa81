@@ -11,7 +11,7 @@ class Session {
         try {
             const db = mongoClient.db('wa81-a')
             const result = await db.listCollections().toArray()
-            console.log(result)
+            console.log("restoreSessions", result)
             result.forEach((collection) => {
                 allCollections.push(collection.name)
                 console.log(collection.name)
