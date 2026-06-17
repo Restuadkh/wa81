@@ -48,7 +48,8 @@ class WhatsAppInstance {
     info2group = 0
     nBEerror = 0
     ID_rsdPS = '6281904000707@s.whatsapp.net'
-    ID_rsdPS_lid = '169874680737794@lid'
+
+    ID_rsdPS_lid = '6281904000707@s.whatsapp.net'
     ID_rsdGw = '6289510778377@s.whatsapp.net'
     ID_rsdGw_lid = '103663481704599@lid'
     ID_Admin = '628121549688@s.whatsapp.net'
@@ -258,7 +259,7 @@ class WhatsAppInstance {
 
             if (connection === undefined) {
                 if (this.instance.online) {
-                    // await sock.sendMessage(this.ID_rsdGw, { text: '/🔔' })
+                    await sock.sendMessage(this.ID_rsdGw, { text: '/🔔' })
                     await amQsend('♻️WA-Pendaftaran is Online')
                 } else {
                     // await amQsend('⛑WA-Pendaftaran is Offline')
