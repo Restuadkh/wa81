@@ -48,6 +48,7 @@ class WhatsAppInstance {
     info2group = 0
     nBEerror = 0
     ID_rsdPS = '6281904000707@s.whatsapp.net'
+    ID_rsdPS_lid = '169874680737794@lid'
     ID_rsdGw = '6289510778377@s.whatsapp.net'
     ID_rsdGw_lid = '103663481704599@lid'
     ID_Admin = '628121549688@s.whatsapp.net'
@@ -257,7 +258,7 @@ class WhatsAppInstance {
 
             if (connection === undefined) {
                 if (this.instance.online) {
-                    await sock.sendMessage(this.ID_rsdGw, { text: '/🔔' })
+                    // await sock.sendMessage(this.ID_rsdGw, { text: '/🔔' })
                     await amQsend('♻️WA-Pendaftaran is Online')
                 } else {
                     // await amQsend('⛑WA-Pendaftaran is Offline')
@@ -712,7 +713,10 @@ class WhatsAppInstance {
                         } else {
                             if (this.lsUnreadChats.length > 0) {
                                 nC++
-                                if (chat.id === this.ID_rsdGw || chat.id === this.ID_rsdGw_lid) {
+                                if (
+                                    chat.id === this.ID_rsdGw ||
+                                    chat.id === this.ID_rsdGw_lid
+                                ) {
                                     this.lastUrC += '*'
                                     await amQsend(
                                         `⚡️🧐Wa81 unreadC : ${this.lsUnreadChats.length}\n${tm}`
@@ -998,7 +1002,11 @@ class WhatsAppInstance {
 
     async myCmdRequest(clientId, nsc, cmd) {
         let rs = { res: ' ' }
-        if (clientId !== this.ID_rsdGw && clientId !== this.ID_rsdGw_lid && clientId !== this.ID_Admin)
+        if (
+            clientId !== this.ID_rsdGw &&
+            clientId !== this.ID_rsdGw_lid &&
+            clientId !== this.ID_Admin
+        )
             rs = { res: '❓' }
         else if (cmd.substring(0, 6) === '/dummy') {
             const ct = stringTrim(cmd.substring(7)) // + "@s.whatsapp.net"
@@ -1512,7 +1520,7 @@ class WhatsAppInstance {
                             }
                     } else if (
                         mx[0] === '/' &&
-                        (clientId === this.ID_rsdGw || 
+                        (clientId === this.ID_rsdGw ||
                             clientId === this.ID_rsdGw_lid ||
                             clientId === this.ID_Admin)
                     )
