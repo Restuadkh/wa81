@@ -4,6 +4,7 @@ const pino = require('pino')
 const {
     default: makeWASocket,
     DisconnectReason,
+    useMultiFileAuthState,
 } = require('@whiskeysockets/baileys')
 const { unlinkSync } = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -98,7 +99,8 @@ class WhatsAppInstance {
 
     async init() {
         this.collection = mongoClient.db('whatsapp-api').collection(this.key)
-        const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        const { state, saveCreds } = await useMultiFileAuthState("./session"+this.key);
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
