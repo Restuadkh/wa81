@@ -1,6 +1,9 @@
+const validPhnNumber = require('../helper/validPhnNumber')
+
 exports.Text = async (req, res) => {
+    let to = validPhnNumber(req.body.id)
     const data = await WhatsAppInstances[req.query.key].sendTextMessage(
-        req.body.id,
+        to,
         req.body.message
     )
     return res.status(201).json({ error: false, data: data })

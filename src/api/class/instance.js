@@ -154,6 +154,15 @@ class WhatsAppInstance {
                     lastDisconnect?.error?.output
                 )
                 if (
+                    lastDisconnect?.error?.output?.payload.message.includes(
+                        'restart required'
+                    )
+                ) {
+                    logger.info('STATE: Connection restart required')
+                    logger.info(lastDisconnect?.error?.output)
+                    process.exit(-1)
+                }
+                if (
                     lastDisconnect?.error?.output?.statusCode !==
                     DisconnectReason.loggedOut
                 ) {
@@ -319,8 +328,19 @@ class WhatsAppInstance {
             this.instance.messages.unshift(...m.messages)
 
             m.messages.map(async (msg) => {
-                const clientId = msg.key.remoteJid
-                console.log('msg ::=> ', msg)
+                let clientId = msg.key.remoteJid
+                if (msg.key.remoteJid === 'status@broadcast') return
+                if (msg.key.remoteJid.indexOf('@g.us') > 0) return
+                if (msg.key.remoteJid.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.remoteJid)
+                else if (msg.key.remoteJidAlt.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.remoteJidAlt)
+                else if (msg.key.participant.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.participant)
+                else if (msg.key.participantAlt.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.participantAlt)
+
+                // console.log('msg ::=> ', msg)
                 console.log('Number/clientId ::=> ', clientId)
                 if (
                     clientId === 'status@broadcast' ||
@@ -596,11 +616,8 @@ class WhatsAppInstance {
                             mx.replace(/[^#]/g, '').length < 3 &&
                             xErr2 === ''
                         )
-                            await tm_notif1(
-                                mx,
-                                clientId,
-                                cFile
-                            ) //// selalu masuk sini Chat WA Hotline
+                            await tm_notif1(mx, clientId, cFile)
+                        //// selalu masuk sini Chat WA Hotline
                         else
                             await amQsend(
                                 `🤔WaGw::\n${mx}\n${cFile}\n${clientId}`
