@@ -13,12 +13,12 @@ const { amQsend, gw_notif2 } = require('./api/helper/amQsend')
 
 let server
 
-if (config.mongoose.enabled) {
-    mongoose.set('strictQuery', true);
-    mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
-        logger.info('Connected to MongoDB')
-    })
-}
+// if (config.mongoose.enabled) {
+//     mongoose.set('strictQuery', true);
+//     mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+//         logger.info('Connected to MongoDB')
+//     })
+// }
 
 server = app.listen(config.port, async () => {
     console.log('\n\n»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»')

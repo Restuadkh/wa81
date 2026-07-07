@@ -4,6 +4,7 @@ const pino = require('pino')
 const {
     default: makeWASocket,
     DisconnectReason,
+    useMultiFileAuthState,
 } = require('@whiskeysockets/baileys')
 const { unlinkSync } = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -11,7 +12,7 @@ const path = require('path')
 const processButton = require('../helper/processbtn')
 const generateVC = require('../helper/genVc')
 const sleep = require('../helper/sleep')
-const Chat = require('../models/chat.model')
+const { connectDB, getCollection } = require('../models/chat.model')
 const axios = require('axios')
 const config = require('../../config/config')
 const downloadMessage = require('../helper/downloadMsg')
@@ -20,11 +21,16 @@ const useMongoDBAuthState = require('../helper/mongoAuthState')
 const fs = require('fs')
 const fsp = require('fs').promises
 const { amQsend, gw_notif2 } = require('../helper/amQsend')
-const { waIdToPhnNumber, stringTrim, cTimeStamp, isFontStandart } = require('../helper/validPhnNumber')
+const {
+    validPhnNumber,
+    waIdToPhnNumber,
+    stringTrim,
+    cTimeStamp,
+    isFontStandart,
+} = require('../helper/validPhnNumber')
 const myToken = require('../helper/myToken')
 const myWords = require('../helper/myWords')
 const MyGrpc2 = require('./P2gRpc')
-
 
 class WhatsAppInstance {
     socketConfig = {
@@ -48,7 +54,6 @@ class WhatsAppInstance {
     info2group = 0
     nBEerror = 0
     ID_rsdPS = '6281904000707@s.whatsapp.net'
-
     ID_rsdPS_lid = '6281904000707@s.whatsapp.net'
     ID_rsdGw = '6289510778377@s.whatsapp.net'
     ID_rsdGw_lid = '103663481704599@lid'
@@ -124,7 +129,11 @@ class WhatsAppInstance {
             this.pInfoLate1 = []
         }
         this.collection = mongoClient.db('wa81-a').collection(this.key)
-        const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        const { state, saveCreds } = await useMultiFileAuthState(
+            './session/' + this.key
+        )
+
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
@@ -166,27 +175,35 @@ class WhatsAppInstance {
     }
 
     async __NoteSet(iKey, data) {
-        let r = await this.axiosInstance
-            .put('note', { instanceKey: iKey, data: data })
-            .catch((e) => {
-                console.log('Exception __NoteSet::', e.code, e)
-            })
+        if (process.env.WEBHOOK_ENABLED === 'true') {
+            let r = await this.axiosInstance
+                .put('note', { instanceKey: iKey, data: data })
+                .catch((e) => {
+                    console.log('Exception __NoteSet::', e.code, e)
+                })
 
-        console.log(`ikey = ${iKey}`)
-        console.log(`data = ${JSON.stringify(data, null, 2)}`)
-        if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
+            console.log(`ikey = ${iKey}`)
+            console.log(`data = ${JSON.stringify(data, null, 2)}`)
+            if (r && r.data) return console.log(`__NoteSet(${iKey})::`, r.data)
+        } else {
+            return null
+        }
     }
 
     async __NoteGet(iKey) {
-        const r = await this.axiosInstance
-            .get(`${iKey}`)
-            .then((res) => res.data)
-            .catch((err) => {
-                console.log(`Exception __NoteGet ${iKey}::`, err.code, err)
-            })
-        if (r && r.data) return r.data
-        console.log(`ikey = ${iKey}`)
-        return r
+        if (process.env.WEBHOOK_ENABLED === 'true') {
+            const r = await this.axiosInstance
+                .get(`${iKey}`)
+                .then((res) => res.data)
+                .catch((err) => {
+                    console.log(`Exception __NoteGet ${iKey}::`, err.code, err)
+                })
+            if (r && r.data) return r.data
+            console.log(`ikey = ${iKey}`)
+            return r
+        } else {
+            return null
+        }
     }
 
     setHandler() {
@@ -372,13 +389,25 @@ class WhatsAppInstance {
                     // process.exit(-1)
                 }
             } else if (connection === 'open') {
-                // if (config.mongoose.enabled) {
-                let alreadyThere = await Chat.findOne({ key: this.key }).exec()
-                if (!alreadyThere) {
-                    const saveChat = new Chat({ key: this.key })
-                    await saveChat.save()
+                if (config.mongoose.enabled) {
+                    // let alreadyThere = await Chat.findOne({ key: this.key }).exec()
+                    // if (!alreadyThere) {
+                    //     const saveChat = new Chat({ key: this.key })
+                    //     await saveChat.save()
+                    // }
+                    const collection = await getCollection()
+
+                    const alreadyThere = await collection.findOne({
+                        key: this.key,
+                    })
+
+                    if (!alreadyThere) {
+                        await collection.insertOne({
+                            key: this.key,
+                            chat: [],
+                        })
+                    }
                 }
-                // }
                 await this.__NoteSet(this.key, { s_open: cTimeStamp() })
 
                 try {
@@ -484,7 +513,8 @@ class WhatsAppInstance {
 
         // on new mssage --------------------------------------------------------------------------------------
         sock?.ev.on('messages.upsert', async (m) => {
-            console.log('Pesan Baru : ', JSON.stringify(m))
+            // console.log('Pesan Baru : ', JSON.stringify(m))
+
             if (m.type === 'prepend') {
                 console.log(`DEBUG prepend:: ${m}`)
                 this.instance.messages.unshift(...m.messages)
@@ -497,7 +527,19 @@ class WhatsAppInstance {
             this.instance.messages.unshift(...m.messages)
             const rSn = new Date().getTime()
             m.messages.map(async (msg) => {
-                const clientId = msg.key.remoteJid
+                let clientId = msg.key.remoteJid
+                if (msg.key.remoteJid.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.remoteJid)
+                else if (msg.key.remoteJidAlt.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.remoteJidAlt)
+                else if (msg.key.participant.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.participant)
+                else if (msg.key.participantAlt.includes('s.whatsapp.net'))
+                    clientId = validPhnNumber(msg.key.participantAlt)
+                console.log('Pesan Baru :')
+                console.log('Number : ', clientId)
+                console.log('Message : ', msg.message)
+                console.log(new Date())
                 if (msg.key.fromMe || clientId === 'status@broadcast') {
                     return
                 }
@@ -2999,10 +3041,19 @@ class WhatsAppInstance {
     }
 
     // get Chat object from db
+    // async getChat(key = this.key) {
+    //     let dbResult = await Chat.findOne({ key: key }).exec()
+    //     let ChatObj = dbResult.chat
+    //     return ChatObj
+    // }
     async getChat(key = this.key) {
-        let dbResult = await Chat.findOne({ key: key }).exec()
-        let ChatObj = dbResult.chat
-        return ChatObj
+        const collection = await getCollection()
+
+        const dbResult = await collection.findOne({
+            key,
+        })
+
+        return dbResult?.chat || []
     }
 
     // create new group by application
@@ -3198,20 +3249,46 @@ class WhatsAppInstance {
         }
     }
 
+    // async deleteInstance(key) {
+    //     try {
+    //         await Chat.findOneAndDelete({ key: key })
+    //     } catch (e) {
+    //         logger.error('Error updating document failed')
+    //     }
+    // }
     async deleteInstance(key) {
         try {
-            await Chat.findOneAndDelete({ key: key })
+            const collection = await getCollection()
+
+            await collection.deleteOne({
+                key,
+            })
         } catch (e) {
-            logger.error('Error updating document failed')
+            logger.error('Error deleting document failed', e)
         }
     }
-
     // update db document -> chat
+    // async updateDb(object) {
+    //     try {
+    //         await Chat.updateOne({ key: this.key }, { chat: object })
+    //     } catch (e) {
+    //         logger.error('Error updating document failed')
+    //     }
+    // }
     async updateDb(object) {
         try {
-            await Chat.updateOne({ key: this.key }, { chat: object })
+            const collection = await getCollection()
+
+            await collection.updateOne(
+                { key: this.key },
+                {
+                    $set: {
+                        chat: object,
+                    },
+                }
+            )
         } catch (e) {
-            logger.error('Error updating document failed')
+            logger.error('Error updating document failed', e)
         }
     }
 
