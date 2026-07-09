@@ -402,7 +402,7 @@ class WhatsAppInstance {
 
                 webhookData['messageType'] = messageType
                 webhookData['msgContent'] = ''
-                const downloadDir = path.join(__dirname, 'Download')
+                const downloadDir = path.join(__dirname,'')
                 try {
                     switch (messageType) {
                         case 'extendedTextMessage':
