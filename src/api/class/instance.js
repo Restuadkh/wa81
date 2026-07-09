@@ -536,14 +536,16 @@ class WhatsAppInstance {
                     clientId = msg.key.participant
                 else if (msg.key.participantAlt.includes('s.whatsapp.net'))
                     clientId = msg.key.participantAlt
+
+                
+                if (msg.key.fromMe || clientId === 'status@broadcast') {
+                    return
+                }
                 console.log('Pesan Baru :')
                 console.log('Number : ', clientId)
                 console.log('Message : ', msg.message?.text)
                 console.log('data : ', JSON.stringify(msg.message))
                 console.log(new Date())
-                if (msg.key.fromMe || clientId === 'status@broadcast') {
-                    return
-                }
                 if (!msg.message) {
                     if (msg.messageStubType) {
                         if (
