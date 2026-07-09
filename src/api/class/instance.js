@@ -483,11 +483,16 @@ class WhatsAppInstance {
                                 1
                             )
                             if (buffer) {
-                                cFile = path.join(
-                                    downloadDir,
-                                    `wa-${msg.key.id}.jpeg`
-                                )
+                                // cFile = path.join(
+                                //     downloadDir,
+                                //     `wa-${msg.key.id}.jpeg`
+                                // )
                                 // cFile = '/Download/wa-' + msg.key.id + '.jpeg'
+                                cFile =
+                                    'downloadDir' +
+                                    '/Download/wa-' +
+                                    msg.key.id +
+                                    '.jpeg'
                                 await fsp.mkdir(downloadDir, {
                                     recursive: true,
                                 })
