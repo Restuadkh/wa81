@@ -331,7 +331,7 @@ class WhatsAppInstance {
                 let clientId = msg.key.remoteJid
                 if (msg.key.remoteJid === 'status@broadcast') return
                 if (msg.key.remoteJid.indexOf('@g.us') > 0) return
-                
+
                 if (msg.key.remoteJid.includes('s.whatsapp.net'))
                     clientId = msg.key.remoteJid
                 else if (msg.key.remoteJidAlt?.includes('s.whatsapp.net'))
@@ -800,7 +800,6 @@ class WhatsAppInstance {
         sock?.ev.on('chats.update', async (changedChat) => {
             // await this.SendWebhook('chats.update', changedChat, this.key)
             changedChat.map(async (chat) => {
-               
                 let id = chat.id
 
                 let text = ''
@@ -819,7 +818,7 @@ class WhatsAppInstance {
                     id = lastMsg.message.key.remoteJidAlt
                 }
                 if (id === this.ID_rsdPS || id === 'status@broadcast') return
- 
+
                 console.log(
                     '============================= chats.update ==================================='
                 )
@@ -990,6 +989,29 @@ class WhatsAppInstance {
                 }
             }
         })
+    }
+
+    getText(message) {
+        if (!message) return ''
+
+        if (message.conversation) return message.conversation
+
+        if (message.extendedTextMessage) return message.extendedTextMessage.text
+
+        if (message.imageMessage?.caption) return message.imageMessage.caption
+
+        if (message.videoMessage?.caption) return message.videoMessage.caption
+
+        if (message.documentMessage?.caption)
+            return message.documentMessage.caption
+
+        if (message.buttonsResponseMessage)
+            return message.buttonsResponseMessage.selectedDisplayText
+
+        if (message.listResponseMessage)
+            return message.listResponseMessage.title
+
+        return ''
     }
 
     async infoUnrespM() {
