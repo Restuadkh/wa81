@@ -680,7 +680,9 @@ class WhatsAppInstance {
                     )
                 }
 
-                console.log('============================= Pesan Baru ===================================')
+                console.log(
+                    '============================= Pesan Baru ==================================='
+                )
                 console.log('Number : ', clientId)
                 console.log('Message : ', mx)
                 console.log('qm : ', qm)
@@ -739,6 +741,11 @@ class WhatsAppInstance {
                 nw = 0,
                 tm = cTimeStamp()
             changedChat.map(async (chat) => {
+                console.log(
+                    '============================= chats.update ==================================='
+                )
+                console.log('data : ', JSON.stringify(chat))
+                console.log(new Date())
                 if (chat.id === this.ID_rsdPS || chat.id === 'status@broadcast')
                     return
                 const index = this.instance.chats.findIndex(
