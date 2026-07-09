@@ -741,7 +741,6 @@ class WhatsAppInstance {
                 nw = 0,
                 tm = cTimeStamp()
             changedChat.map(async (chat) => {
-                if (id === this.ID_rsdPS || id === 'status@broadcast') return
 
                 console.log(
                     '============================= chats.update ==================================='
@@ -758,6 +757,8 @@ class WhatsAppInstance {
                     chat.messages.key.remoteJidAlt?.includes('s.whatsapp.net')
                 )
                     id = chat.messages.key.remoteJidAlt
+                if (id === this.ID_rsdPS || id === 'status@broadcast') return
+                
                 console.log('ID/Number :', id)
                 console.log('Message   :', text)
                 console.log('Data      :', JSON.stringify(chat, null, 2))
