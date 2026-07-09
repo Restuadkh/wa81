@@ -744,23 +744,32 @@ class WhatsAppInstance {
                 console.log(
                     '============================= chats.update ==================================='
                 )
+
+                let id = chat.id
+
+                if (chat.messages.key.remoteJid?.includes('s.whatsapp.net'))
+                    id = chat.messages.key.remoteJid
+                else if (chat.messages.key.remoteJidAlt?.includes('s.whatsapp.net'))
+                    id = chat.messages.key.remoteJidAlt
+
+                console.log('ID/Number : ', id)
                 console.log('data : ', JSON.stringify(chat))
                 console.log(new Date())
-                if (chat.id === this.ID_rsdPS || chat.id === 'status@broadcast')
+                if (id === this.ID_rsdPS || id === 'status@broadcast')
                     return
                 const index = this.instance.chats.findIndex(
-                    (pc) => pc.id === chat.id
+                    (pc) => pc.id === id
                 )
                 const PrevChat = this.instance.chats[index]
-                this.instance.chats[index] = { ...PrevChat, ...chat }
+                this.instance.chats[index] = { ...PrevChat, ...chat } /// wadah untuk chat yang belum dibaca Pasient/Client
                 try {
                     if (chat.unreadCount > 0) {
                         if (
                             chat.unreadCount > 1 &&
-                            this.lsUnreadChats.includes(chat.id)
+                            this.lsUnreadChats.includes(id)
                         ) {
                             await amQsend(
-                                `⚡️⚡️Wa81 unreadC* //wa.me/${chat.id.replace(
+                                `⚡️⚡️Wa81 unreadC* //wa.me/${id.replace(
                                     /@s.whatsapp.net/g,
                                     ''
                                 )}\n${tm}`
@@ -770,8 +779,8 @@ class WhatsAppInstance {
                             if (this.lsUnreadChats.length > 0) {
                                 nC++
                                 if (
-                                    chat.id === this.ID_rsdGw ||
-                                    chat.id === this.ID_rsdGw_lid
+                                    id === this.ID_rsdGw ||
+                                    id === this.ID_rsdGw_lid
                                 ) {
                                     this.lastUrC += '*'
                                     await amQsend(
@@ -779,11 +788,12 @@ class WhatsAppInstance {
                                     )
                                 }
                             }
-                            this.lsUnreadChats.push(chat.id)
+                            if (!this.lsUnreadChats.includes(id))
+                                this.lsUnreadChats.push(id)
                         }
                     } else {
                         this.lsUnreadChats = this.lsUnreadChats.filter(
-                            (v) => v !== chat.id
+                            (v) => v !== id
                         )
                         if (
                             this.lsUnreadChats.length < 1 &&
