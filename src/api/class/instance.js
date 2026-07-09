@@ -751,12 +751,13 @@ class WhatsAppInstance {
                 const lastMsg = chat.messages?.[0]
                 const msg = lastMsg?.message?.message
                 text = this.getText(lastMsg?.message?.message)
-                // if (chat.messages.key.remoteJid?.includes('s.whatsapp.net'))
-                //     id = chat.messages.key.remoteJid
-                // else if (
-                //     chat.messages.key.remoteJidAlt?.includes('s.whatsapp.net')
-                // )
-                //     id = chat.messages.key.remoteJidAlt
+                if (lastMsg?.message?.key?.remoteJid?.includes('s.whatsapp.net')) {
+                    id = lastMsg.message.key.remoteJid
+                } else if (
+                    lastMsg?.message?.key?.remoteJidAlt?.includes('s.whatsapp.net')
+                ) {
+                    id = lastMsg.message.key.remoteJidAlt
+                }
                 if (id === this.ID_rsdPS || id === 'status@broadcast') return
                 
                 console.log('ID/Number :', id)
