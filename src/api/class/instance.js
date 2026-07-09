@@ -741,22 +741,28 @@ class WhatsAppInstance {
                 nw = 0,
                 tm = cTimeStamp()
             changedChat.map(async (chat) => {
+                if (id === this.ID_rsdPS || id === 'status@broadcast') return
+
                 console.log(
                     '============================= chats.update ==================================='
                 )
-
                 let id = chat.id
 
+                let text = ''
+                const msg = lastMsg?.message?.message
+                const lastMsg = chat.messages?.[0]
+                text = this.getText(lastMsg?.message?.message)
                 if (chat.messages.key.remoteJid?.includes('s.whatsapp.net'))
                     id = chat.messages.key.remoteJid
-                else if (chat.messages.key.remoteJidAlt?.includes('s.whatsapp.net'))
+                else if (
+                    chat.messages.key.remoteJidAlt?.includes('s.whatsapp.net')
+                )
                     id = chat.messages.key.remoteJidAlt
-
-                console.log('ID/Number : ', id)
-                console.log('data : ', JSON.stringify(chat))
+                console.log('ID/Number :', id)
+                console.log('Message   :', text)
+                console.log('Data      :', JSON.stringify(chat, null, 2))
                 console.log(new Date())
-                if (id === this.ID_rsdPS || id === 'status@broadcast')
-                    return
+
                 const index = this.instance.chats.findIndex(
                     (pc) => pc.id === id
                 )
@@ -1002,6 +1008,29 @@ class WhatsAppInstance {
                     '\nUntuk pertanyaan/informasi, silakan WA ke:\n*Hotline RSUD-PS 0811-263-7570*',
             }
         }
+    }
+
+    getText(message) {
+        if (!message) return ''
+
+        if (message.conversation) return message.conversation
+
+        if (message.extendedTextMessage) return message.extendedTextMessage.text
+
+        if (message.imageMessage?.caption) return message.imageMessage.caption
+
+        if (message.videoMessage?.caption) return message.videoMessage.caption
+
+        if (message.documentMessage?.caption)
+            return message.documentMessage.caption
+
+        if (message.buttonsResponseMessage)
+            return message.buttonsResponseMessage.selectedDisplayText
+
+        if (message.listResponseMessage)
+            return message.listResponseMessage.title
+
+        return ''
     }
 
     infoWaitTime(np, cc) {
