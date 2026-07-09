@@ -537,7 +537,10 @@ class WhatsAppInstance {
                 else if (msg.key.participantAlt?.includes('s.whatsapp.net'))
                     clientId = msg.key.participantAlt
 
-                if (msg.key.fromMe || clientId === 'status@broadcast') {
+                if (
+                    msg.key.fromMe ||
+                    msg.key.remoteJid === 'status@broadcast'
+                ) {
                     return
                 }
                 if (!msg.message) {
