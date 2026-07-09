@@ -529,16 +529,17 @@ class WhatsAppInstance {
             m.messages.map(async (msg) => {
                 let clientId = msg.key.remoteJid
                 if (msg.key.remoteJid.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.remoteJid)
+                    clientId = msg.key.remoteJid
                 else if (msg.key.remoteJidAlt.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.remoteJidAlt)
+                    clientId = msg.key.remoteJidAlt
                 else if (msg.key.participant.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.participant)
+                    clientId = msg.key.participant
                 else if (msg.key.participantAlt.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.participantAlt)
+                    clientId = msg.key.participantAlt
                 console.log('Pesan Baru :')
                 console.log('Number : ', clientId)
-                console.log('Message : ', msg.message)
+                console.log('Message : ', msg.message?.text)
+                console.log('data : ', JSON.stringify(msg.message))
                 console.log(new Date())
                 if (msg.key.fromMe || clientId === 'status@broadcast') {
                     return
