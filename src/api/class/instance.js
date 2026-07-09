@@ -489,7 +489,7 @@ class WhatsAppInstance {
                                 // )
                                 // cFile = '/Download/wa-' + msg.key.id + '.jpeg'
                                 cFile =
-                                    'downloadDir' +
+                                    downloadDir +
                                     '/Download/wa-' +
                                     msg.key.id +
                                     '.jpeg'
