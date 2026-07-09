@@ -748,8 +748,8 @@ class WhatsAppInstance {
                 let id = chat.id
 
                 let text = ''
-                const msg = lastMsg?.message?.message
                 const lastMsg = chat.messages?.[0]
+                const msg = lastMsg?.message?.message
                 text = this.getText(lastMsg?.message?.message)
                 if (chat.messages.key.remoteJid?.includes('s.whatsapp.net'))
                     id = chat.messages.key.remoteJid
