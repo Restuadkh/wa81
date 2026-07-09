@@ -402,6 +402,7 @@ class WhatsAppInstance {
 
                 webhookData['messageType'] = messageType
                 webhookData['msgContent'] = ''
+                const downloadDir = path.join(__dirname, 'Download')
                 try {
                     switch (messageType) {
                         case 'extendedTextMessage':
@@ -482,7 +483,14 @@ class WhatsAppInstance {
                                 1
                             )
                             if (buffer) {
-                                cFile = '/Download/wa-' + msg.key.id + '.jpeg'
+                                cFile = path.join(
+                                    downloadDir,
+                                    `wa-${msg.key.id}.jpeg`
+                                )
+                                // cFile = '/Download/wa-' + msg.key.id + '.jpeg'
+                                await fsp.mkdir(downloadDir, {
+                                    recursive: true,
+                                })
                                 await fsp.writeFile(cFile, buffer)
                                 webhookData['fileContent'] = cFile
                                 try {
@@ -518,7 +526,7 @@ class WhatsAppInstance {
                                 1
                             )
                             if (buffer) {
-                                cFile = '/Download/wa-' + msg.key.id + '.mp4'
+                                cFile = './Download/wa-' + msg.key.id + '.mp4'
                                 await fsp.writeFile(cFile, buffer)
                                 webhookData['fileContent'] = cFile
                                 try {
