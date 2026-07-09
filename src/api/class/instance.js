@@ -331,14 +331,15 @@ class WhatsAppInstance {
                 let clientId = msg.key.remoteJid
                 if (msg.key.remoteJid === 'status@broadcast') return
                 if (msg.key.remoteJid.indexOf('@g.us') > 0) return
+                
                 if (msg.key.remoteJid.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.remoteJid)
-                else if (msg.key.remoteJidAlt.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.remoteJidAlt)
-                else if (msg.key.participant.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.participant)
-                else if (msg.key.participantAlt.includes('s.whatsapp.net'))
-                    clientId = validPhnNumber(msg.key.participantAlt)
+                    clientId = msg.key.remoteJid
+                else if (msg.key.remoteJidAlt?.includes('s.whatsapp.net'))
+                    clientId = msg.key.remoteJidAlt
+                else if (msg.key.participant?.includes('s.whatsapp.net'))
+                    clientId = msg.key.participant
+                else if (msg.key.participantAlt?.includes('s.whatsapp.net'))
+                    clientId = msg.key.participantAlt
 
                 // console.log('msg ::=> ', msg)
                 console.log('Number/clientId ::=> ', clientId)
@@ -799,16 +800,44 @@ class WhatsAppInstance {
         sock?.ev.on('chats.update', async (changedChat) => {
             // await this.SendWebhook('chats.update', changedChat, this.key)
             changedChat.map(async (chat) => {
-                if (chat.id === 'status@broadcast') return
+               
+                let id = chat.id
+
+                let text = ''
+                const lastMsg = chat.messages?.[0]
+                const msg = lastMsg?.message?.message
+                text = this.getText(lastMsg?.message?.message)
+                if (
+                    lastMsg?.message?.key?.remoteJid?.includes('s.whatsapp.net')
+                ) {
+                    id = lastMsg.message.key.remoteJid
+                } else if (
+                    lastMsg?.message?.key?.remoteJidAlt?.includes(
+                        's.whatsapp.net'
+                    )
+                ) {
+                    id = lastMsg.message.key.remoteJidAlt
+                }
+                if (id === this.ID_rsdPS || id === 'status@broadcast') return
+ 
+                console.log(
+                    '============================= chats.update ==================================='
+                )
+                console.log('ID/Number :', id)
+                console.log('Message   :', text)
+                console.log('Data      :', JSON.stringify(chat, null, 2))
+                console.log(new Date())
+
+                if (id === 'status@broadcast') return
                 const index = this.instance.chats.findIndex(
-                    (pc) => pc.id === chat.id
+                    (pc) => pc.id === id
                 )
                 const PrevChat = this.instance.chats[index]
                 this.instance.chats[index] = { ...PrevChat, ...chat }
                 try {
                     if (chat.unreadCount > 0) {
-                        if (this.lsUnreadChats.includes(chat.id)) {
-                            await amQsend(`⚡️⚠️WaGw unreadC*: ${chat.id}`)
+                        if (this.lsUnreadChats.includes(id)) {
+                            await amQsend(`⚡️⚠️WaGw unreadC*: ${id}`)
                             await this.SendWebhook(
                                 'chats.update:unreadCount',
                                 this.lsUnreadChats,
@@ -821,12 +850,12 @@ class WhatsAppInstance {
                                     this.infoUnreadC()
                                 }, 8000)
                             }
-                            if (chat.id !== this.ID_rsdPS)
-                                this.lsUnreadChats.push(chat.id)
+                            if (id !== this.ID_rsdPS)
+                                this.lsUnreadChats.push(id)
                         }
                     } else {
                         this.lsUnreadChats = this.lsUnreadChats.filter(
-                            (v) => v !== chat.id
+                            (v) => v !== id
                         )
                         if (
                             this.lsUnreadChats.length < 1 &&
