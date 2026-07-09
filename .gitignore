@@ -4,7 +4,7 @@ package-lock.json
 yarn.lock
 
 # APPLICATION
-#.env
+.env
 sessiondata
 session*
 session/*
