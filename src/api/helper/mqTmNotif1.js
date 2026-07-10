@@ -22,13 +22,6 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
             throw new Error(`File tidak ditemukan: ${img}`)
         }
 
-        console.log(img)
-        console.log('isBuffer:', Buffer.isBuffer(img))
-        console.log('type:', typeof img)
-
-        if (Buffer.isBuffer(img)) {
-            console.log('size:', img.length)
-        }
         const form = new FormData()
 
         // form.append('file', img, {
