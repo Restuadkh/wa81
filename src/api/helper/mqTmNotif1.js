@@ -3,6 +3,8 @@ const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
 const Q_TMWAGW = 'tmgw.notif'
 const FormData = require('form-data')
 const axios = require('axios')
+const fs = require('fs')
+const path = require('path')
 
 let lsSimrsGroup = ['.']
 let lshappybday = ['.']
@@ -16,6 +18,10 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
         return
     }
     if (img !== '') {
+        if (!fs.existsSync(img)) {
+            throw new Error(`File tidak ditemukan: ${img}`)
+        }
+
         console.log(img)
         console.log('isBuffer:', Buffer.isBuffer(img))
         console.log('type:', typeof img)
@@ -25,8 +31,13 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
         }
         const form = new FormData()
 
-        form.append('file', img, {
-            filename: img,
+        // form.append('file', img, {
+        //     filename: img,
+        //     contentType: 'image/jpeg',
+        // })
+
+        form.append('file', fs.createReadStream(img), {
+            filename: path.basename(img),
             contentType: 'image/jpeg',
         })
 
@@ -35,6 +46,8 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
             form,
             {
                 headers: form.getHeaders(),
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity,
             }
         )
         console.log('Response Axios :', res.data)
