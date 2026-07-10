@@ -487,15 +487,15 @@ class WhatsAppInstance {
                                 //     downloadDir,
                                 //     `wa-${msg.key.id}.jpeg`
                                 // )
-                                // cFile = '/Download/wa-' + msg.key.id + '.jpeg'
-                                cFile =
-                                    downloadDir +
-                                    '/Download/wa-' +
-                                    msg.key.id +
-                                    '.jpeg'
-                                await fsp.mkdir(downloadDir, {
-                                    recursive: true,
-                                })
+                                cFile = '/Download/wa-' + msg.key.id + '.jpeg'
+                                // cFile =
+                                //     downloadDir +
+                                //     '/Download/wa-' +
+                                //     msg.key.id +
+                                //     '.jpeg'
+                                // await fsp.mkdir(downloadDir, {
+                                //     recursive: true,
+                                // })
                                 await fsp.writeFile(cFile, buffer)
                                 webhookData['fileContent'] = cFile
                                 try {
