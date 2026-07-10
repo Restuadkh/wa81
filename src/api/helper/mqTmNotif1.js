@@ -16,6 +16,13 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
         return
     }
     if (img !== '') {
+        console.log(img)
+        console.log('isBuffer:', Buffer.isBuffer(img))
+        console.log('type:', typeof img)
+
+        if (Buffer.isBuffer(img)) {
+            console.log('size:', img.length)
+        }
         const form = new FormData()
 
         form.append('file', img, {
@@ -30,7 +37,7 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
                 headers: form.getHeaders(),
             }
         )
-        console.log('Response Axios :', res)
+        console.log('Response Axios :', res.data)
         imgUrl = res.data.url
     }
     amqp.connect(url_t2, (connError, connection) => {
