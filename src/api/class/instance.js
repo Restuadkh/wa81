@@ -745,22 +745,25 @@ class WhatsAppInstance {
                 nw = 0,
                 tm = cTimeStamp()
             changedChat.map(async (chat) => {
-
                 let id = chat.id
 
                 let text = ''
                 const lastMsg = chat.messages?.[0]
                 const msg = lastMsg?.message?.message
                 text = this.getText(lastMsg?.message?.message)
-                if (lastMsg?.message?.key?.remoteJid?.includes('s.whatsapp.net')) {
+                if (
+                    lastMsg?.message?.key?.remoteJid?.includes('s.whatsapp.net')
+                ) {
                     id = lastMsg.message.key.remoteJid
                 } else if (
-                    lastMsg?.message?.key?.remoteJidAlt?.includes('s.whatsapp.net')
+                    lastMsg?.message?.key?.remoteJidAlt?.includes(
+                        's.whatsapp.net'
+                    )
                 ) {
                     id = lastMsg.message.key.remoteJidAlt
                 }
                 if (id === this.ID_rsdPS || id === 'status@broadcast') return
-                
+
                 console.log(
                     '============================= chats.update ==================================='
                 )
@@ -1512,22 +1515,26 @@ class WhatsAppInstance {
                 rs,
                 rtkn = '',
                 xs,
-                nx = 0
-
-            let ntag = mx.replace(/[^#]/g, '').length
-            if (
-                ntag === 0 &&
-                mx.length > 27 &&
-                mx.length < 123 &&
-                /^daftar/i.test(mx)
-            ) {
-                if (mx.replace(/[^,]/g, '').length > 3)
-                    mx = mx.replace(/,/g, '#')
-                else if (mx.replace(/[^\n]/g, '').length > 3)
-                    mx = mx.replace(/\n/g, '#')
-                else if (mx.replace(/[^\/]/g, '').length > 3)
-                    mx = mx.replace(/\//g, '#')
+                nx = 0,
+                ntag
+            try {
                 ntag = mx.replace(/[^#]/g, '').length
+                if (
+                    ntag === 0 &&
+                    mx.length > 27 &&
+                    mx.length < 123 &&
+                    /^daftar/i.test(mx)
+                ) {
+                    if (mx.replace(/[^,]/g, '').length > 3)
+                        mx = mx.replace(/,/g, '#')
+                    else if (mx.replace(/[^\n]/g, '').length > 3)
+                        mx = mx.replace(/\n/g, '#')
+                    else if (mx.replace(/[^\/]/g, '').length > 3)
+                        mx = mx.replace(/\//g, '#')
+                    ntag = mx.replace(/[^#]/g, '').length
+                }
+            } catch (e) {
+                await amQsend(`⚠️Wa81 Err.m81Response\n::${e}\n${mx}`)
             }
             let now = new Date().getTime()
             let nsc = (now - 1_684_861_200_000) % 86_400_000
