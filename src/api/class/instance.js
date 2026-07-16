@@ -32,7 +32,7 @@ class WhatsAppInstance {
             level: config.log.level,
         }),
     }
-    key = ''
+    key = 'wa-187-gw'
     authState
     allowWebhook = undefined
     webhook = undefined
@@ -402,7 +402,7 @@ class WhatsAppInstance {
 
                 webhookData['messageType'] = messageType
                 webhookData['msgContent'] = ''
-                const downloadDir = path.join(__dirname,'')
+                const downloadDir = path.join(__dirname, '')
                 try {
                     switch (messageType) {
                         case 'extendedTextMessage':
