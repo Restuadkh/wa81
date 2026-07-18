@@ -818,6 +818,7 @@ class WhatsAppInstance {
                 let text = ''
                 const lastMsg = chat.messages?.[0]
                 const msg = lastMsg?.message?.message
+                if (id === this.ID_rsdPS || id === 'status@broadcast') return
                 text = this.getText(lastMsg?.message?.message)
                 if (
                     lastMsg?.message?.key?.remoteJid?.includes('s.whatsapp.net')
@@ -830,7 +831,6 @@ class WhatsAppInstance {
                 ) {
                     id = lastMsg.message.key.remoteJidAlt
                 }
-                if (id === this.ID_rsdPS || id === 'status@broadcast') return
 
                 console.log(
                     '============================= chats.update ==================================='
