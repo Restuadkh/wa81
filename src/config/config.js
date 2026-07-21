@@ -12,7 +12,7 @@ const RESTORE_SESSIONS_ON_START_UP = !!(
 
 const APP_URL = process.env.APP_URL || false
 
-const LOG_LEVEL = process.env.LOG_LEVEL
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info'
 
 const INSTANCE_MAX_RETRY_QR = process.env.INSTANCE_MAX_RETRY_QR || 2
 
