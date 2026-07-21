@@ -41,7 +41,7 @@ class WhatsAppInstance {
         }),
     }
     axiosInstance = axios.create({ baseURL: config.webhookUrl })
-    key = ''
+    key = 'wa-81-adm'
     authState
     allowWebhook = undefined
     webhook = undefined
@@ -131,7 +131,7 @@ class WhatsAppInstance {
         this.collection = mongoClient.db('wa81-a').collection(this.key)
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         const { state, saveCreds } = await useMultiFileAuthState(
-            './session/' + this.key
+            '../session/' + this.key
         )
 
         this.authState = { state: state, saveCreds: saveCreds }
