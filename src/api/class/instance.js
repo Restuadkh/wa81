@@ -100,7 +100,7 @@ class WhatsAppInstance {
     }
 
     async init() {
-        this.collection = mongoClient.db('whatsapp-api').collection(this.key)
+        // this.collection = mongoClient.db('whatsapp-api').collection(this.key)
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         const { state, saveCreds } = await useMultiFileAuthState(
             '../session/' + this.key
@@ -160,7 +160,7 @@ class WhatsAppInstance {
                 ) {
                     logger.info('STATE: Connection restart required')
                     logger.info(lastDisconnect?.error?.output)
-                    process.exit(-1)
+                    // process.exit(-1)
                 }
                 if (
                     lastDisconnect?.error?.output?.statusCode !==
@@ -186,7 +186,7 @@ class WhatsAppInstance {
                         this.cnt01 > 19
                     ) {
                         await sleep(33_000)
-                        process.exit(-1)
+                        // process.exit(-1)
                     }
                     await sleep(33_000)
                     setTimeout(async () => {
@@ -204,7 +204,7 @@ class WhatsAppInstance {
                         await sleep(90_000 * this.nTryReCon)
                         await this.init()
                     }
-                    await this.collection.drop().then((r) => {
+                    await this.collection.drop().then(() => {
                         logger.info('STATE: Droped collection')
                         logger.info(
                             'STATE: Connection status is Droped & loggedOut'
@@ -256,14 +256,16 @@ class WhatsAppInstance {
                     )
                 await amQsend('🟢WaGw connection up')
                 // if (nStat < 0) tm_notif1('🟢WaGw connection up', this.ID_rsdGw)
-                if (!this.xConnState) {
+                if (!this.xConnState) { // connection up
                     this.xConnState = true
                     console.log('🟢WAGw is now Online')
                     // await amQsend('🟢WAGw is now Online', 'group')
                     tm_notif1('🟢WaGw connection up', this.ID_rsdGw)
                     await amQsend('🟢WaGw restart app...')
                     await sleep(1_579)
-                    process.exit(1)
+                    // process.exit(1)
+                    // restart service
+                    this.setHandler() // apakah ini aman? 
                 }
                 await this.chkTheWA81('Assalamualaikum🙏🏻')
                 console.log('\n')
@@ -712,7 +714,7 @@ class WhatsAppInstance {
                             clientId, // tujuan: otomatis @s.whatsapp.net atau @lid
                             { text: '🙂🙏🏻' }
                         )
-                        return 0
+                        // return 0
                         if (clientId === this.ID_yh) {
                             console.log(r)
                             setTimeout(async () => {
@@ -1741,8 +1743,8 @@ class WhatsAppInstance {
         console.log(
             `█▐${new Date().toLocaleString()} task::${phnId}|${img}|${news}|*${note}`
         )
-        let rtn = true,
-            dt
+        let rtn = true
+        let dt
         try {
             if (img > 'A') {
                 let mx = {

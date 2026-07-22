@@ -54,7 +54,7 @@ class MsgQueue {
             my_app_up = new Date()
             if (Math.round(timeDiff / 60) > 2) {
                 // tm_notif81(`⚠️WaGw1 ${dt.mx}`)
-                setTimeout(function () { process.exit(1) }, 7_000)
+                // setTimeout(function () { process.exit(1) }, 7_000)
             } // else tm_notif81(`⚡️WaGw1 skip ${dt.mx} |${my_app_up}`)
             return 1
         }
