@@ -131,10 +131,10 @@ class WhatsAppInstance {
         }
         this.collection = mongoClient.db('wa81-a').collection(this.key)
         const { version, isLatest } = await fetchLatestBaileysVersion()
-        const { state, saveCreds } = await useMongoDBAuthState(this.collection)
-        // const { state, saveCreds } = await useMultiFileAuthState(
-        //     '../session/' + this.key
-        // )
+        // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        const { state, saveCreds } = await useMultiFileAuthState(
+            '../session/' + this.key
+        )
 
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
