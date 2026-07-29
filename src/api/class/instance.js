@@ -389,6 +389,7 @@ class WhatsAppInstance {
                             'STATE: Connection status is Droped loggedOut'
                         )
                     })
+                    await fsp.rm(`../session/${this.key}`, { recursive: true, force: true })
                     // process.exit(-1)
                 }
             } else if (connection === 'open') {
