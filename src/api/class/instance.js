@@ -104,7 +104,7 @@ class WhatsAppInstance {
         // this.collection = mongoClient.db('whatsapp-api').collection(this.key)
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         
-        const { version, isLatest } = await fetchLatestBaileysVersion()
+        const { version, isLatest, error } = await fetchLatestBaileysVersion()
         const { state, saveCreds } = await useMultiFileAuthState(
             '../session/' + this.key
         )
@@ -112,7 +112,14 @@ class WhatsAppInstance {
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
         this.instance.sock = makeWASocket(this.socketConfig)
-        this.instance.version = version
+        if (error) {
+            logger.warn(
+                'fetchLatestBaileysVersion gagal, pakai fallback manual'
+            )
+            this.socketConfig.version = [2, 3000, 1043857760]
+        } else {
+            this.socketConfig.version = version
+        }
         this.setHandler()
         console.log(`Init WhatsAppInstance ☑️`)
         await amQsend(`⚡️ WaGw: Init WhatsAppInstance ☑️`)
