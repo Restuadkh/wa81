@@ -390,6 +390,7 @@ class WhatsAppInstance {
                         )
                     })
                     await fsp.rm(`../session/${this.key}`, { recursive: true, force: true })
+                    console.log(`STATE: Remove session folder ../session/${this.key}`)
                     // process.exit(-1)
                 }
             } else if (connection === 'open') {
