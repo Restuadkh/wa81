@@ -24,6 +24,7 @@ const fsp = require('fs').promises
 const amQsend = require('../helper/amQsend')
 const tm_notif1 = require('../helper/mqTmNotif1')
 const validPhnNumber = require('../helper/validPhnNumber')
+const {MsgQueue} = require('./mqConsumer')
 
 class WhatsAppInstance {
     socketConfig = {
@@ -122,6 +123,7 @@ class WhatsAppInstance {
         }
         this.setHandler()
         console.log(`Init WhatsAppInstance ☑️`)
+        this.msgQueue = new MsgQueue(this)
         await amQsend(`⚡️ WaGw: Init WhatsAppInstance ☑️`)
         return this
     }
