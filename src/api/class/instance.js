@@ -131,10 +131,10 @@ class WhatsAppInstance {
         }
         this.collection = mongoClient.db('wa81-a').collection(this.key)
         const { version, isLatest } = await fetchLatestBaileysVersion()
-        // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
-        const { state, saveCreds } = await useMultiFileAuthState(
-            '../session/' + this.key
-        )
+        const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        // const { state, saveCreds } = await useMultiFileAuthState(
+        //     '../session/' + this.key
+        // )
 
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
@@ -374,14 +374,21 @@ class WhatsAppInstance {
                     let mx = `🔴WA-Pendaftaran loggedOut\n${JSON.stringify(
                         lastDisconnect?.error?.output?.payload
                     )}`
+                    // await fsp.rm(`../session/${this.key}`, {
+                    //     recursive: true,
+                    //     force: true,
+                    // })
+                    // console.log(
+                    //     `STATE: Remove session folder ../session/${this.key}`
+                    // )
                     await amQsend(`🔴${mx}`)
-                    await amQsend(`🔴${mx}`, 'group')
-                    await this.__NoteSet(this.key, {
-                        conn_loggedOut: cTimeStamp(),
-                        i_group: 1,
-                        xConnState: this.xConnState,
-                        rmk: mx,
-                    })
+                    // await amQsend(`🔴${mx}`, 'group')
+                    // await this.__NoteSet(this.key, {
+                    //     conn_loggedOut: cTimeStamp(),
+                    //     i_group: 1,
+                    //     xConnState: this.xConnState,
+                    //     rmk: mx,
+                    // })
                     await sleep(5_555)
                     await this.collection.drop().then((r) => {
                         logger.info('STATE: Droped collection')
@@ -389,8 +396,6 @@ class WhatsAppInstance {
                             'STATE: Connection status is Droped loggedOut'
                         )
                     })
-                    await fsp.rm(`../session/${this.key}`, { recursive: true, force: true })
-                    console.log(`STATE: Remove session folder ../session/${this.key}`)
                     // process.exit(-1)
                 }
             } else if (connection === 'open') {
