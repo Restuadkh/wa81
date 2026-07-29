@@ -5,6 +5,7 @@ const {
     default: makeWASocket,
     DisconnectReason,
     useMultiFileAuthState,
+    fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys')
 const { unlinkSync } = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -129,6 +130,7 @@ class WhatsAppInstance {
             this.pInfoLate1 = []
         }
         this.collection = mongoClient.db('wa81-a').collection(this.key)
+        const { version, isLatest } = await fetchLatestBaileysVersion()
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
         const { state, saveCreds } = await useMultiFileAuthState(
             '../session/' + this.key
@@ -137,6 +139,7 @@ class WhatsAppInstance {
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
+        this.socketConfig.version = version
         this.instance.sock = makeWASocket(this.socketConfig)
         await amQsend(
             `Wa81 init ...${sts}\ndf:${this.diskSts}\n${this.stsIniT}`
