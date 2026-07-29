@@ -5,6 +5,7 @@ const {
     default: makeWASocket,
     DisconnectReason,
     useMultiFileAuthState,
+    fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys')
 const { unlinkSync } = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -102,6 +103,8 @@ class WhatsAppInstance {
     async init() {
         // this.collection = mongoClient.db('whatsapp-api').collection(this.key)
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
+        
+        const { version, isLatest } = await fetchLatestBaileysVersion()
         const { state, saveCreds } = await useMultiFileAuthState(
             '../session/' + this.key
         )
@@ -109,6 +112,7 @@ class WhatsAppInstance {
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
         this.instance.sock = makeWASocket(this.socketConfig)
+        this.instance.version = version
         this.setHandler()
         console.log(`Init WhatsAppInstance ☑️`)
         await amQsend(`⚡️ WaGw: Init WhatsAppInstance ☑️`)
@@ -204,6 +208,13 @@ class WhatsAppInstance {
                         await sleep(90_000 * this.nTryReCon)
                         await this.init()
                     }
+                    await fs.rm(`../session/${this.key}`, { recursive: true, force: true }, (err) => {
+                        if (err) {
+                            logger.error(`Error removing session directory: ${err}`);   
+                        } else {
+                            logger.info(`Session directory removed successfully.`);
+                        }
+                    })
                     await this.collection.drop().then(() => {
                         logger.info('STATE: Droped collection')
                         logger.info(
