@@ -24,7 +24,7 @@ const fsp = require('fs').promises
 const amQsend = require('../helper/amQsend')
 const tm_notif1 = require('../helper/mqTmNotif1')
 const validPhnNumber = require('../helper/validPhnNumber')
-const {MsgQueue} = require('./mqConsumer')
+const { MsgQueue } = require('./mqConsumer')
 
 class WhatsAppInstance {
     socketConfig = {
@@ -97,30 +97,32 @@ class WhatsAppInstance {
         setTimeout(async () => {
             await this.axiosInstance
                 .post('', { type, body, instanceKey: key })
-                .catch(() => {})
+                .catch(() => { })
         }, 88)
     }
 
     async init() {
         // this.collection = mongoClient.db('whatsapp-api').collection(this.key)
         // const { state, saveCreds } = await useMongoDBAuthState(this.collection)
-        
         const { version, isLatest, error } = await fetchLatestBaileysVersion()
         const { state, saveCreds } = await useMultiFileAuthState(
-            '../session/' + this.key
+            path.join(__dirname, '../../../session/', this.key)
         )
         this.authState = { state: state, saveCreds: saveCreds }
         this.socketConfig.auth = this.authState.state
         this.socketConfig.browser = Object.values(config.browser)
-        this.instance.sock = makeWASocket(this.socketConfig)
+
         if (error) {
-            logger.warn(
-                'fetchLatestBaileysVersion gagal, pakai fallback manual'
-            )
+            logger.warn('fetchLatestBaileysVersion gagal, pakai fallback manual')
             this.socketConfig.version = [2, 3000, 1043857760]
         } else {
             this.socketConfig.version = version
+            logger.info(`Baileys version: ${version.join('.')}, isLatest: ${isLatest}`)
         }
+
+        // ⬇️ makeWASocket dipanggil PALING TERAKHIR, setelah semua config lengkap
+        this.instance.sock = makeWASocket(this.socketConfig)
+
         this.setHandler()
         console.log(`Init WhatsAppInstance ☑️`)
         this.msgQueue = new MsgQueue(this)
@@ -139,8 +141,7 @@ class WhatsAppInstance {
             const { connection, lastDisconnect, qr } = update
 
             console.log(
-                `${new Date().toLocaleString()} connection state : ${connection} || xsts:${
-                    lastDisconnect?.error?.output
+                `${new Date().toLocaleString()} connection state : ${connection} || xsts:${lastDisconnect?.error?.output
                 }`
             )
             await this.SendWebhook(
@@ -148,11 +149,10 @@ class WhatsAppInstance {
                 {
                     messageType: `conn.status`,
                     message: {
-                        conversation: `${new Date().toLocaleString()} ::connection:${connection} #${
-                            this.cnt01
-                        }|| ${JSON.stringify(
-                            lastDisconnect?.error?.output?.payload
-                        )}`,
+                        conversation: `${new Date().toLocaleString()} ::connection:${connection} #${this.cnt01
+                            }|| ${JSON.stringify(
+                                lastDisconnect?.error?.output?.payload
+                            )}`,
                     },
                 },
                 this.key
@@ -166,6 +166,8 @@ class WhatsAppInstance {
                     'connection closed::',
                     lastDisconnect?.error?.output
                 )
+                logger.info(`STATE: Connection closed #${this.cnt01}`)
+                logger.info(lastDisconnect?.error?.output)
                 if (
                     lastDisconnect?.error?.output?.payload.message.includes(
                         'restart required'
@@ -181,11 +183,10 @@ class WhatsAppInstance {
                 ) {
                     // reconnect if not logged out
                     this.cnt01++
-                    let mx = `⚡️⛑WaGw disconnected #${
-                        this.cnt01
-                    }\n${JSON.stringify(
-                        lastDisconnect?.error?.output?.payload
-                    )}`
+                    let mx = `⚡️⛑WaGw disconnected #${this.cnt01
+                        }\n${JSON.stringify(
+                            lastDisconnect?.error?.output?.payload
+                        )}`
                     await amQsend(mx)
                     if (this.cnt01 === 2) {
                         this.xConnState = false
@@ -217,9 +218,9 @@ class WhatsAppInstance {
                         await sleep(90_000 * this.nTryReCon)
                         await this.init()
                     }
-                    await fs.rm(`../session/${this.key}`, { recursive: true, force: true }, (err) => {
+                    await fs.rm(path.join(__dirname, '../../../session/', this.key), { recursive: true, force: true }, (err) => {
                         if (err) {
-                            logger.error(`Error removing session directory: ${err}`);   
+                            logger.error(`Error removing session directory: ${err}`);
                         } else {
                             logger.info(`Session directory removed successfully.`);
                         }
@@ -487,7 +488,7 @@ class WhatsAppInstance {
                                         e2
                                     console.log(
                                         'Error conversation@editedMessage: ' +
-                                            err_e
+                                        err_e
                                     )
                                 }
                                 if (err_e > ' ')
@@ -1112,8 +1113,7 @@ class WhatsAppInstance {
         if (Math.round(timeDiff / 60) > 7) {
             if (this.m81_cntr > 1) {
                 await amQsend(
-                    `WAGw get WA81 #${
-                        this.m81_cntr
+                    `WAGw get WA81 #${this.m81_cntr
                     } ${this.last_rsp.toLocaleString()}`
                 )
             }
