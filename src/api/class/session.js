@@ -35,6 +35,21 @@ class Session {
             logger.error('Error restoring sessions')
             logger.error(e)
         }
+        let key = "wa-187-gw"
+        try {
+            const webhook = !config.webhookEnabled ? undefined : config.webhookEnabled
+            const webhookUrl = !config.webhookUrl ? undefined : config.webhookUrl
+            const instance = new WhatsAppInstance(key, webhook, webhookUrl)
+            await instance.init()
+            WhatsAppInstances[key] = instance
+            // const msgQueue = new MsgQueue(instance)
+            setTimeout(() => { const msgQueue = new MsgQueue(instance) }, 88_000)
+            restoredSessions.push(key)
+            logger.info('Restored session:', key)
+        } catch (e) {
+            logger.error('Error restoring session:', key)
+            logger.error(e)
+        }
         return restoredSessions
     }
 }

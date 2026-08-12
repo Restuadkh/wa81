@@ -17,35 +17,35 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
         console.log(`lshappybday :: ${lshappybday}`)
         return
     }
-    if (img !== '') {
-        if (!fs.existsSync(img)) {
-            throw new Error(`File tidak ditemukan: ${img}`)
-        }
+    // if (img !== '') {
+    //     if (!fs.existsSync(img)) {
+    //         throw new Error(`File tidak ditemukan: ${img}`)
+    //     }
 
-        const form = new FormData()
+    //     const form = new FormData()
 
-        // form.append('file', img, {
-        //     filename: img,
-        //     contentType: 'image/jpeg',
-        // })
+    //     // form.append('file', img, {
+    //     //     filename: img,
+    //     //     contentType: 'image/jpeg',
+    //     // })
 
-        form.append('file', fs.createReadStream(img), {
-            filename: path.basename(img),
-            contentType: 'image/jpeg',
-        })
+    //     form.append('file', fs.createReadStream(img), {
+    //         filename: path.basename(img),
+    //         contentType: 'image/jpeg',
+    //     })
 
-        const res = await axios.post(
-            'http://192.168.201.19:3000/upload',
-            form,
-            {
-                headers: form.getHeaders(),
-                maxBodyLength: Infinity,
-                maxContentLength: Infinity,
-            }
-        )
-        console.log('Response Axios :', res.data)
-        imgUrl = res.data.url
-    }
+    //     const res = await axios.post(
+    //         'http://192.168.201.19:3000/upload',
+    //         form,
+    //         {
+    //             headers: form.getHeaders(),
+    //             maxBodyLength: Infinity,
+    //             maxContentLength: Infinity,
+    //         }
+    //     )
+    //     console.log('Response Axios :', res.data)
+    //     imgUrl = res.data.url
+    // }
     amqp.connect(url_t2, (connError, connection) => {
         if (connError) {
             console.log(`RMQ connection (1) error:: ${connError} !!`)

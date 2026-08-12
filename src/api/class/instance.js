@@ -175,7 +175,7 @@ class WhatsAppInstance {
                 ) {
                     logger.info('STATE: Connection restart required')
                     logger.info(lastDisconnect?.error?.output)
-                    // process.exit(-1)
+                    process.exit(-1)
                 }
                 if (
                     lastDisconnect?.error?.output?.statusCode !==
@@ -200,7 +200,7 @@ class WhatsAppInstance {
                         this.cnt01 > 19
                     ) {
                         await sleep(33_000)
-                        // process.exit(-1)
+                        process.exit(-1)
                     }
                     await sleep(33_000)
                     setTimeout(async () => {
@@ -284,7 +284,7 @@ class WhatsAppInstance {
                     tm_notif1('🟢WaGw connection up', this.ID_rsdGw)
                     await amQsend('🟢WaGw restart app...')
                     await sleep(1_579)
-                    // process.exit(1)
+                    process.exit(1)
                     // restart service
                     this.setHandler() // apakah ini aman? 
                 }
@@ -674,7 +674,7 @@ class WhatsAppInstance {
                                 `\n${new Date().toLocaleString()} RESTARTING SEVICE_____________________________________________\n`
                             )
                             // setTimeout(async () => {
-                            //     process.exit(1)
+                                process.exit(1)
                             // }, 321)
                         }
                     }
