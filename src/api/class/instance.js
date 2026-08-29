@@ -199,7 +199,7 @@ class WhatsAppInstance {
                         /restart required|stream errored|440/is.test(mx) ||
                         this.cnt01 > 19
                     ) {
-                        await sleep(33_000)
+                        await sleep(15_000)
                         process.exit(-1)
                     }
                     await sleep(33_000)
@@ -212,27 +212,38 @@ class WhatsAppInstance {
                     let mx = `🔴 WaGw loggedOut\n${JSON.stringify(
                         lastDisconnect?.error?.output?.payload
                     )}`
-                    await amQsend(`🔴${mx}`)
-                    if (this.nTryReCon < 5) {
-                        this.nTryReCon++
-                        await sleep(90_000 * this.nTryReCon)
-                        await this.init()
-                    }
-                    await fs.rm(path.join(__dirname, '../../../session/', this.key), { recursive: true, force: true }, (err) => {
-                        if (err) {
-                            logger.error(`Error removing session directory: ${err}`);
-                        } else {
-                            logger.info(`Session directory removed successfully.`);
-                        }
-                    })
-                    await this.collection.drop().then(() => {
-                        logger.info('STATE: Droped collection')
-                        logger.info(
-                            'STATE: Connection status is Droped & loggedOut'
-                        )
-                        tm_notif1(mx, this.ID_rsdGw)
-                        this.xConnState = false
-                    })
+                    // await amQsend(`🔴${mx}`)
+                    // if (this.nTryReCon < 5) {
+                    //     this.nTryReCon++
+                    //     await sleep(90_000 * this.nTryReCon)
+                    //     await this.init()
+                    // }
+
+                    fs.mkdirSync(
+                        path.join(__dirname, `../../session/${this.key}`),
+                        { recursive: true }
+                    )
+                    fs.rmSync(
+                        path.join(__dirname, `../../session/${this.key}`),
+                        { recursive: true, force: true }
+                    )
+                    // await fs.rm(path.join(__dirname, '../../../session/', this.key), { recursive: true, force: true }, (err) => {
+                    //     if (err) {
+                    //         logger.error(`Error removing session directory: ${err}`);
+                    //     } else {
+                    logger.info(`Session directory removed successfully.`);
+                    //     }
+                    // })
+                    await this.init()
+
+                    // await this.collection.drop().then(() => {
+                    //     logger.info('STATE: Droped collection')
+                    //     logger.info(
+                    //         'STATE: Connection status is Droped & loggedOut'
+                    //     )
+                    //     tm_notif1(mx, this.ID_rsdGw)
+                    //     this.xConnState = false
+                    // })
                 }
 
                 if (
@@ -323,6 +334,34 @@ class WhatsAppInstance {
                         this.instance.qr = ''
                         logger.info('socket connection terminated')
                     }
+
+
+                    let countdown = 60
+
+                    this.instance.timercountdown = countdown
+
+                    // Hapus timer sebelumnya jika ada
+                    if (this.instance.qrTimer) {
+                        clearInterval(this.instance.qrTimer)
+                    }
+
+                    this.instance.qrTimer = setInterval(() => {
+                        countdown--
+
+                        this.instance.timercountdown = countdown
+
+                        console.log(`QRcode timer: ${countdown} seconds`)
+
+                        if (countdown <= 0) {
+                            clearInterval(this.instance.qrTimer)
+                            this.instance.qrTimer = null
+
+                            // this.instance.qr = ''
+                            this.instance.timercountdown = 'QRcode expired'
+
+                            console.log('QRcode expired')
+                        }
+                    }, 1000)
                 })
             }
         })
@@ -674,7 +713,7 @@ class WhatsAppInstance {
                                 `\n${new Date().toLocaleString()} RESTARTING SEVICE_____________________________________________\n`
                             )
                             // setTimeout(async () => {
-                                process.exit(1)
+                            process.exit(1)
                             // }, 321)
                         }
                     }

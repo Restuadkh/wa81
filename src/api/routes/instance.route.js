@@ -12,5 +12,6 @@ router.route('/restore').get(controller.restore)
 router.route('/logout').delete(keyVerify, loginVerify, controller.logout)
 router.route('/delete').delete(keyVerify, controller.delete)
 router.route('/list').get(controller.list)
+router.route('/reconect').post(controller.reconect)
 
 module.exports = router

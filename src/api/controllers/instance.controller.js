@@ -43,10 +43,13 @@ exports.qr = async (req, res) => {
 exports.qrbase64 = async (req, res) => {
     try {
         const qrcode = await WhatsAppInstances[req.query.key]?.instance.qr
+        const countdown = await WhatsAppInstances[req.query.key]?.instance
+            .timercountdown
         res.json({
             error: false,
             message: 'QR Base64 fetched successfully',
             qrcode: qrcode,
+            timer: countdown,
         })
     } catch {
         res.json({
@@ -139,4 +142,9 @@ exports.list = async (req, res) => {
         message: 'All instance listed',
         data: data,
     })
+}
+
+
+exports.reconect = async (req, res) => {
+    process.exit()
 }
