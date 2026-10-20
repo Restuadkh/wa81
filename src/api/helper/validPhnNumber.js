@@ -1,11 +1,12 @@
 module.exports = function validPhnNumber(cp) {
+    cp = `${cp}`
     let nl,
-        cn = `${cp}`.replace(/\D/g, '')
-    if (cp.includes('@s.whatsapp.net')) {
-        return cp
-    }
+        cn = cp.replace(/\D/g, '')
     if (cp.endsWith('@lid@s.whatsapp.net')) {
         cp = cp.replace(/@s.whatsapp.net/g, '') // tanpa validasi panjang
+    }
+    if (cp.includes('@s.whatsapp.net') || cp.endsWith('@g.us')) {
+        return cp
     }
     if (cp.endsWith('@lid')) {
         // cn += '@s.whatsapp.net'
@@ -18,8 +19,8 @@ module.exports = function validPhnNumber(cp) {
     if (cn.charAt(0) === '6' && nl > 9 && nl < 17) {
         cn += '@s.whatsapp.net'
     } else {
-        cn = ''
         console.log(`Invalid phone number "${cp}" --> "${cn}" |${nl}\n`)
+        cn = ''
         throw new Error(`Invalid phone number "${cp}"`)
     }
     // console.log("validPhnNumber(cp) :", cn)

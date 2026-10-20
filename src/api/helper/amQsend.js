@@ -1,5 +1,5 @@
 const amqp = require('amqplib/callback_api');
-const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
+const url_t2 = process.env.RMQ_URL
 const QUEUE_TM = 'tm_queue'
 
 module.exports = async function amQsend(msg) {
@@ -9,6 +9,9 @@ module.exports = async function amQsend(msg) {
             // throw connError;
             return false;
         }
+        connection.on('error', (err) => {
+            console.log(`RMQ connection error: ${err}`)
+        })
         connection.createChannel((channelError, channel) => {
             if (channelError) {
                 console.log(`RMQ channel error ${QUEUE_TM} !!`)

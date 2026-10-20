@@ -1,6 +1,5 @@
 /* eslint-disable no-unsafe-optional-chaining */
 const { WhatsAppInstance } = require('../class/instance')
-const { MsgQueue } = require('../class/mqConsumer')
 const logger = require('pino')()
 const config = require('../../config/config')
 
@@ -16,18 +15,17 @@ class Session {
             })
 
             allCollections.map((key) => {
+                if (key === 'wa-187-gw') return // dibuat di bawah, hindari socket ganda
                 const query = {}
                 db.collection(key)
                     .find(query)
                     .toArray(async (err, result) => {
-                        if (err) throw err
+                        if (err) return logger.error(err)
                         const webhook = !config.webhookEnabled ? undefined : config.webhookEnabled
                         const webhookUrl = !config.webhookUrl ? undefined : config.webhookUrl
                         const instance = new WhatsAppInstance(key, webhook, webhookUrl)
                         await instance.init()
                         WhatsAppInstances[key] = instance
-                        // const msgQueue = new MsgQueue(instance)
-                        setTimeout(() => { const msgQueue = new MsgQueue(instance) }, 88_000)
                     })
                 restoredSessions.push(key)
             })
@@ -42,10 +40,8 @@ class Session {
             const instance = new WhatsAppInstance(key, webhook, webhookUrl)
             await instance.init()
             WhatsAppInstances[key] = instance
-            // const msgQueue = new MsgQueue(instance)
-            setTimeout(() => { const msgQueue = new MsgQueue(instance) }, 88_000)
             restoredSessions.push(key)
-            logger.info('Restored session:', key)
+            logger.info(`Restored session: ${key}`)
         } catch (e) {
             logger.error('Error restoring session:', key)
             logger.error(e)

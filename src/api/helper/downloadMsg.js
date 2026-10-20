@@ -13,7 +13,7 @@ module.exports = async function downloadMessage(msg, msgType, rBuff = 0) {
             break
         } catch (e) {
             console.log(`\nERROR downloadMessage ${msgType}|${nTry}|${e}|\n${JSON.stringify(msg)}\n`)
-            new Promise((resolve) => { setTimeout(resolve, 3_300) })
+            await new Promise((resolve) => { setTimeout(resolve, 3_300) })
         }
         nTry++
     }

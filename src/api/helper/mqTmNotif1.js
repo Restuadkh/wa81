@@ -1,5 +1,5 @@
 const amqp = require('amqplib/callback_api')
-const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
+const url_t2 = process.env.RMQ_URL
 const Q_TMWAGW = 'tmgw.notif'
 const FormData = require('form-data')
 const axios = require('axios')
@@ -53,6 +53,9 @@ module.exports = async function tm_notif1(msg, phn, img = '') {
             return false
         }
 
+        connection.on('error', (err) => {
+            console.log(`RMQ connection error: ${err}`)
+        })
         connection.createChannel((channelError, channel) => {
             if (channelError) {
                 console.log(`RMQ channel error ${Q_TMWAGW} !!`)

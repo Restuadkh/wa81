@@ -125,7 +125,7 @@ class WhatsAppInstance {
 
         this.setHandler()
         console.log(`Init WhatsAppInstance ☑️`)
-        this.msgQueue = new MsgQueue(this)
+        if (!this.msgQueue) this.msgQueue = new MsgQueue(this)
         await amQsend(`⚡️ WaGw: Init WhatsAppInstance ☑️`)
         return this
     }
@@ -220,11 +220,11 @@ class WhatsAppInstance {
                     // }
 
                     fs.mkdirSync(
-                        path.join(__dirname, `../../session/${this.key}`),
+                        path.join(__dirname, '../../../session/', this.key),
                         { recursive: true }
                     )
                     fs.rmSync(
-                        path.join(__dirname, `../../session/${this.key}`),
+                        path.join(__dirname, '../../../session/', this.key),
                         { recursive: true, force: true }
                     )
                     // await fs.rm(path.join(__dirname, '../../../session/', this.key), { recursive: true, force: true }, (err) => {
@@ -641,7 +641,8 @@ class WhatsAppInstance {
                             )
                             let fnm = `-${new Date().getTime()}.x`
                             try {
-                                fnm = msg.message.documentMessage.fileName
+                                fnm = `${msg.message.documentMessage.fileName ?? fnm}`
+                                    .replace(/[\\/]/g, '_')
                             } catch (e1) {
                                 console.log(
                                     'Error get fileName documentMessage: ' + e1
@@ -770,7 +771,7 @@ class WhatsAppInstance {
                             )
                     } else if (xErr1 === '' && xErr2 === '') {
                         // await sock.sendTextMessage(clientId, '🙂🙏🏻', true)
-                        await sock.sendMessage(
+                        const r = await sock.sendMessage(
                             clientId, // tujuan: otomatis @s.whatsapp.net atau @lid
                             { text: '🙂🙏🏻' }
                         )
@@ -906,8 +907,10 @@ class WhatsAppInstance {
                 const index = this.instance.chats.findIndex(
                     (pc) => pc.id === id
                 )
-                const PrevChat = this.instance.chats[index]
-                this.instance.chats[index] = { ...PrevChat, ...chat }
+                if (index > -1) {
+                    const PrevChat = this.instance.chats[index]
+                    this.instance.chats[index] = { ...PrevChat, ...chat }
+                }
                 try {
                     if (chat.unreadCount > 0) {
                         if (this.lsUnreadChats.includes(id)) {
@@ -953,7 +956,7 @@ class WhatsAppInstance {
                 const index = this.instance.chats.findIndex(
                     (c) => c.id === chat
                 )
-                this.instance.chats.splice(index, 1)
+                if (index > -1) this.instance.chats.splice(index, 1)
                 this.lsUnreadChats = this.lsUnreadChats.filter(
                     (v) => v !== chat
                 )
@@ -1168,13 +1171,19 @@ class WhatsAppInstance {
     }
 
     getWhatsAppId(id) {
-        if (id.includes('@g.us') || id.includes('@s.whatsapp.net')) return id
+        id = `${id}`
+        if (
+            id.includes('@g.us') ||
+            id.includes('@s.whatsapp.net') ||
+            id.includes('@lid')
+        )
+            return id
         return id.includes('-') ? `${id}@g.us` : `${id}@s.whatsapp.net`
     }
 
     async verifyId(id) {
         if (id.includes('@g.us')) return true
-        const [result] = await this.instance.sock?.onWhatsApp(id)
+        const [result] = (await this.instance.sock?.onWhatsApp(id)) || []
         if (result?.exists) return true
         throw new Error(`account ${id} not exists!`)
     }
@@ -1191,7 +1200,7 @@ class WhatsAppInstance {
     }
 
     async sendTextMessage(phn, message, knownId = false) {
-        let to = validPhnNumber(phn),
+        let to = phn,
             data = null
         // let data = await this.reffResult(to, message)
         try {
@@ -1405,7 +1414,10 @@ class WhatsAppInstance {
 
     async setStatus(status, to) {
         await this.verifyId(this.getWhatsAppId(to))
-        const result = await this.instance.sock?.sendPresenceUpdate(status, to)
+        const result = await this.instance.sock?.sendPresenceUpdate(
+            status,
+            this.getWhatsAppId(to)
+        )
         return result
     }
 
@@ -1882,7 +1894,7 @@ class WhatsAppInstance {
                 // dt = await this.instance.sock?.sendMessage(phnId, {
                 //     text: news,
                 // })
-                this.sendTextMessage(phnId, news, true)
+                dt = await this.sendTextMessage(phnId, news, true)
 
                 await amQsend(`WAGw: ${phnId} ☑️`)
                 await this.SendWebhook(`sendTextMessage`, dt, this.key)

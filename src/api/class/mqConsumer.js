@@ -1,7 +1,7 @@
 const amqp = require('amqplib/callback_api')
 const validPhnNumber = require('../helper/validPhnNumber')
 const QUEUE = 'wa.notif'
-const url_t2 = 'amqp://simrs:rmq187@192.168.201.19:5672'
+const url_t2 = process.env.RMQ_URL
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -16,7 +16,7 @@ class MsgQueue {
         amqp.connect(url_t2, (connError, connection) => {
             if (connError) {
                 console.log(
-                    `\n${new Date().toLocaleString()} RMQ connection error ${url_t2} ::${connError}!\n`
+                    `\n${new Date().toLocaleString()} RMQ connection error ::${connError}!\n`
                 )
                 setTimeout(() => this.connect(), 87_000) // retry connect setelah 87 detik
                 return
@@ -54,7 +54,13 @@ class MsgQueue {
             ck = '',
             img = '',
             note = '',
+            dt
+        try {
             dt = JSON.parse(msg.content.toString())
+        } catch (e) {
+            console.log(`dt : invalid JSON ${e}`)
+            return false
+        }
         console.log('Consume wa.notif : ', msg)
         if (typeof dt !== 'object') {
             console.log('dt : object')
@@ -87,7 +93,13 @@ class MsgQueue {
             return 1
         }
 
-        const phnId = validPhnNumber(dt.phn)
+        let phnId
+        try {
+            phnId = validPhnNumber(dt.phn)
+        } catch (e) {
+            console.log(`dt : invalid phn ${dt.phn}`)
+            return false
+        }
         if (
             (phnId.substring(0, 2) === '62' && phnId > '628') ||
             phnId.includes('@lid')
