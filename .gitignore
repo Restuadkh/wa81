@@ -11,3 +11,4 @@ session/*
 # IDEs
 .vscode/settings.json
 .idea
+__node_modules
