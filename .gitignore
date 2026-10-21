@@ -12,3 +12,4 @@ session/*
 .vscode/settings.json
 .idea
 __node_modules
+node_modules
